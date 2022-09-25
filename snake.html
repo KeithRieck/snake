@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Snake</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="128x128" href="snake_apple-touch-icon.png">
+    <meta name="description" content="Snake game written in Python and compiled to JavaScript.">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="white"/>
+</head>
+<body class="fullscreen">
+
+<div class="container">
+<canvas id="canvas" width="640" height="480"></canvas>
+</div>
+
+<script type="module">
+    import * as game from "./build/snake.js";
+    window.game = game;
+    const urlParams = new URLSearchParams(window.location.search);
+    var app = new window.game.SnakeGame();
+    app.set_debug(urlParams.get('debug'))
+    app.start()
+</script>
+
+<div style="display:none;">
+    <audio id="add_apple" src="assets/snake_add_apple.wav"></audio>
+    <audio id="collision" src="assets/snake_collision.mp3"></audio>
+    <audio id="eat_apple" src="assets/snake_eat_apple.wav"></audio>
+</div>
+</body>
+</html>
