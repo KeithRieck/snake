@@ -25,6 +25,8 @@ RIGHT = "RIGHT"
 DEBUG = False
 COLOR_TIME = 1500
 COLOR_APPLE = ['#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc', '#ffffff']
+SCORE_TIME = 3000
+COLOR_SCORE = ['#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000']
 
 
 class Apple(GameObject):
@@ -133,6 +135,7 @@ class Snake(GameObject):
                 console.log("Collision with wall at " + nx + "," + ny)
         if len(self.scene.apples) == 0 and self.scene.mode == GAME_RUNNING:
             self.schedule(self.scene.add_apple, 1000)
+        self.scene.score.inc()
 
 
 class SnakeSegment(GameObject):
@@ -276,6 +279,8 @@ class SnakeScene(Scene):
         self.sound_add_apple = self.game.load_audio('add_apple')
         self.sound_collision = self.game.load_audio('collision')
         self.sound_eat_apple = self.game.load_audio('eat_apple')
+        self.score = Score(game)
+        self.append(self.score)
 
     def reset_board(self):
         self.mode = GAME_BEGIN
@@ -323,6 +328,7 @@ class SnakeScene(Scene):
     def collision(self):
         self.sound_collision.play()
         self.mode = GAME_OVER
+        self.score.start_fade(True)
 
     def update(self, delta_time: float):
         Scene.update(self, delta_time)
@@ -352,12 +358,70 @@ class SnakeScene(Scene):
         ctx.restore()
 
 
+class Score(GameObject):
+    def __init__(self, game):
+        GameObject.__init__(self, game)
+        self.score = 2
+        self.font = '18pt sans-serif'
+        self.fade_mode = 'blank'
+        self.fade_time = 0
+        self.color = COLOR_SCORE[0]
+        self.left_side = True
+    
+    def inc(self):
+        global DEBUG
+        self.score = self.score + 1
+        if self.score % 5 == 0:
+            self.start_fade()
+    
+    def start_fade(self, game_over=False):
+        self.fade_mode = 'fade-in'
+        self.fade_time = 0
+        self.color = COLOR_SCORE[0]
+        if game_over:
+            self.xx = 15
+            self.yy = 30
+        else:
+            self.left_side = not self.left_side
+            self.xx = 15 if self.left_side else (BOARD_SIZE + 2) * CELL_SIZE
+            self.yy = Math.floor(Math.random() * (BOARD_SIZE - 2)) * CELL_SIZE + CELL_SIZE
+    
+    def update(self, delta_time: float):
+        GameObject.update(self, delta_time)
+        if self.fade_mode == 'fade-in':
+            self.fade_time += delta_time
+            t = Math.floor(len(COLOR_SCORE) * self.fade_time / SCORE_TIME)
+            if t < len(COLOR_SCORE):
+                self.color = COLOR_SCORE[t]
+            else:
+                self.fade_mode = 'fade-out'
+        elif self.fade_mode == 'fade-out' and self.scene.mode != GAME_OVER:
+            self.fade_time -= delta_time
+            t = Math.floor(len(COLOR_SCORE) * self.fade_time / SCORE_TIME)
+            if t > 0:
+                self.color = COLOR_SCORE[t]
+            else:
+                self.fade_mode = 'blank'
+                self.fade_time = 0
+                self.color = COLOR_SCORE[0]
+
+    
+    def draw(self, ctx):
+        GameObject.draw(self, ctx)
+        ctx.save()
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.font = self.font
+        ctx.fillStyle = self.color
+        ctx.fillText('{}'.format(self.score), self.xx, self.yy)
+        ctx.restore()
+
+
 class SnakeGame(Game):
     def __init__(self, loop_time=20):
         Game.__init__(self, 'Snake', loop_time)
         self.append(SnakeScene(self, 'MAIN'))
 
-    @staticmethod
+    @staticmethod 
     def set_debug(b):
         global DEBUG, SNAKE_TIME_STEP
         if b is not None and b == 'true':

@@ -1,4 +1,4 @@
-// Transcrypt'ed from Python, 2022-09-25 15:16:13
+// Transcrypt'ed from Python, 2025-06-12 13:11:36
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import {Sprite} from './bedlam.js';
 import {Scene} from './bedlam.js';
@@ -21,6 +21,8 @@ export var RIGHT = 'RIGHT';
 export var DEBUG = false;
 export var COLOR_TIME = 1500;
 export var COLOR_APPLE = ['#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc', '#ffffff'];
+export var SCORE_TIME = 3000;
+export var COLOR_SCORE = ['#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000'];
 export var Apple =  __class__ ('Apple', [GameObject], {
 	__module__: __name__,
 	get __init__ () {return __get__ (this, function (self, game, cx, cy) {
@@ -144,6 +146,7 @@ export var Snake =  __class__ ('Snake', [GameObject], {
 		if (len (self.scene.apples) == 0 && self.scene.mode == GAME_RUNNING) {
 			self.schedule (self.scene.add_apple, 1000);
 		}
+		self.scene.score.inc ();
 	});}
 });
 export var SnakeSegment =  __class__ ('SnakeSegment', [GameObject], {
@@ -334,6 +337,8 @@ export var SnakeScene =  __class__ ('SnakeScene', [Scene], {
 		self.sound_add_apple = self.game.load_audio ('add_apple');
 		self.sound_collision = self.game.load_audio ('collision');
 		self.sound_eat_apple = self.game.load_audio ('eat_apple');
+		self.score = Score (game);
+		self.append (self.score);
 	});},
 	get reset_board () {return __get__ (this, function (self) {
 		self.mode = GAME_BEGIN;
@@ -398,6 +403,7 @@ export var SnakeScene =  __class__ ('SnakeScene', [Scene], {
 	get collision () {return __get__ (this, function (self) {
 		self.sound_collision.play ();
 		self.mode = GAME_OVER;
+		self.score.start_fade (true);
 	});},
 	get py_update () {return __get__ (this, function (self, delta_time) {
 		Scene.py_update (self, delta_time);
@@ -425,6 +431,75 @@ export var SnakeScene =  __class__ ('SnakeScene', [Scene], {
 			}
 			ctx.stroke ();
 		}
+		ctx.restore ();
+	});}
+});
+export var Score =  __class__ ('Score', [GameObject], {
+	__module__: __name__,
+	get __init__ () {return __get__ (this, function (self, game) {
+		GameObject.__init__ (self, game);
+		self.score = 2;
+		self.font = '18pt sans-serif';
+		self.fade_mode = 'blank';
+		self.fade_time = 0;
+		self.color = COLOR_SCORE [0];
+		self.left_side = true;
+	});},
+	get inc () {return __get__ (this, function (self) {
+		self.score = self.score + 1;
+		if (__mod__ (self.score, 5) == 0) {
+			self.start_fade ();
+		}
+	});},
+	get start_fade () {return __get__ (this, function (self, game_over) {
+		if (typeof game_over == 'undefined' || (game_over != null && game_over.hasOwnProperty ("__kwargtrans__"))) {;
+			var game_over = false;
+		};
+		self.fade_mode = 'fade-in';
+		self.fade_time = 0;
+		self.color = COLOR_SCORE [0];
+		if (game_over) {
+			self.xx = 15;
+			self.yy = 30;
+		}
+		else {
+			self.left_side = !(self.left_side);
+			self.xx = (self.left_side ? 15 : (BOARD_SIZE + 2) * CELL_SIZE);
+			self.yy = Math.floor (Math.random () * (BOARD_SIZE - 2)) * CELL_SIZE + CELL_SIZE;
+		}
+	});},
+	get py_update () {return __get__ (this, function (self, delta_time) {
+		GameObject.py_update (self, delta_time);
+		if (self.fade_mode == 'fade-in') {
+			self.fade_time += delta_time;
+			var t = Math.floor ((len (COLOR_SCORE) * self.fade_time) / SCORE_TIME);
+			if (t < len (COLOR_SCORE)) {
+				self.color = COLOR_SCORE [t];
+			}
+			else {
+				self.fade_mode = 'fade-out';
+			}
+		}
+		else if (self.fade_mode == 'fade-out' && self.scene.mode != GAME_OVER) {
+			self.fade_time -= delta_time;
+			var t = Math.floor ((len (COLOR_SCORE) * self.fade_time) / SCORE_TIME);
+			if (t > 0) {
+				self.color = COLOR_SCORE [t];
+			}
+			else {
+				self.fade_mode = 'blank';
+				self.fade_time = 0;
+				self.color = COLOR_SCORE [0];
+			}
+		}
+	});},
+	get draw () {return __get__ (this, function (self, ctx) {
+		GameObject.draw (self, ctx);
+		ctx.save ();
+		ctx.globalCompositeOperation = 'source-over';
+		ctx.font = self.font;
+		ctx.fillStyle = self.color;
+		ctx.fillText ('{}'.format (self.score), self.xx, self.yy);
 		ctx.restore ();
 	});}
 });
