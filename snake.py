@@ -25,7 +25,7 @@ RIGHT = "RIGHT"
 DEBUG = False
 COLOR_TIME = 1500
 COLOR_APPLE = ['#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc', '#ffffff']
-SCORE_TIME = 3000
+SCORE_TIME = 2500
 COLOR_SCORE = ['#ffffff', '#cccccc', '#999999', '#666666', '#333333', '#000000']
 
 
