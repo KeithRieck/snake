@@ -1,4 +1,5 @@
-COMPILE_FLAGS=-b -m -n
+# COMPILE_FLAGS=-b -m -n
+COMPILE_FLAGS=-b
 PYTHON_HOME=/usr/local
 DEPLOY_DIR=${HOME}/Sites/bedlam
 
