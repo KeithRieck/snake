@@ -324,6 +324,17 @@ class SnakeScene(Scene):
             self._set_direction(UP)
         elif event.key == 's' or event.key == 'ArrowDown':
             self._set_direction(DOWN)
+    
+    def handle_gamepad(self, gp):
+        Scene.handle_gamepad(self, gp)
+        if self.is_button_pressed(gp, 14) or self.is_button_pressed(gp, 2):
+            self._set_direction(LEFT)
+        elif self.is_button_pressed(gp, 15) or self.is_button_pressed(gp, 3):
+            self._set_direction(RIGHT)
+        elif self.is_button_pressed(gp, 12) or self.is_button_pressed(gp, 0):
+            self._set_direction(UP)
+        elif self.is_button_pressed(gp, 13) or self.is_button_pressed(gp, 1):
+            self._set_direction(DOWN)
 
     def collision(self):
         self.sound_collision.play()
