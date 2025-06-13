@@ -1,4 +1,4 @@
-// Transcrypt'ed from Python, 2025-06-12 13:11:36
+// Transcrypt'ed from Python, 2025-06-13 11:05:43
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 var __name__ = 'bedlam';
 export var _in_browser = function () {
@@ -595,6 +595,16 @@ export var Scene =  __class__ ('Scene', [GameObject], {
 	get handle_keydown () {return __get__ (this, function (self, event) {
 		// pass;
 	});},
+	get handle_gamepad () {return __get__ (this, function (self, gp) {
+		// pass;
+	});},
+	get is_button_pressed () {return __get__ (this, function (self, gp, i) {
+		var b = gp.buttons [i];
+		if (isinstance (b, tuple ([int, float]))) {
+			return b == 1;
+		}
+		return b.pressed || b.touched || b.value > 0;
+	});},
 	get append () {return __get__ (this, function (self, gameobject) {
 		self.children.append (gameobject);
 		gameobject.scene = self;
@@ -662,9 +672,10 @@ export var Game =  __class__ ('Game', [object], {
 			self.canvasFrame = null;
 			self.canvas = null;
 		}
-		self.scenes = dict ({});
+		self.scenes = dict ();
 		self.currentScene = null;
 		self._loop_time = loop_time;
+		self.gamepads = dict ();
 	});},
 	get __get_context () {return __get__ (this, function (self) {
 		return self.canvas.getContext ('2d');
@@ -735,6 +746,44 @@ export var Game =  __class__ ('Game', [object], {
 			self.currentScene.handle_keydown (event);
 		}
 	});},
+	get _add_gamepad () {return __get__ (this, function (self, event) {
+		self.gamepads [event.gamepad.index] = event.gamepad;
+	});},
+	get _remove_gamepad () {return __get__ (this, function (self, event) {
+		self.gamepads.py_pop (event.gamepad.index);
+	});},
+	get get_gamepad () {return __get__ (this, function (self, index) {
+		if (typeof index == 'undefined' || (index != null && index.hasOwnProperty ("__kwargtrans__"))) {;
+			var index = null;
+		};
+		var gp = null;
+		if (navigator.webkitGetGamepads !== undefined) {
+			var gp = navigator.webkitGetGamepads () [0];
+		}
+		else {
+			var gp = navigator.getGamepads () [0];
+		}
+		if (gp !== undefined && gp !== null) {
+			if (!(gp.connected)) {
+				return null;
+			}
+			if (gp.connected && (index === null || gp.index == index)) {
+				return gp;
+			}
+		}
+		return null;
+	});},
+	get handle_gamepad () {return __get__ (this, function (self, index) {
+		if (typeof index == 'undefined' || (index != null && index.hasOwnProperty ("__kwargtrans__"))) {;
+			var index = null;
+		};
+		if (self.currentScene !== null) {
+			var gp = self.get_gamepad (index);
+			if (gp !== null) {
+				self.currentScene.handle_gamepad (gp);
+			}
+		}
+	});},
 	get append () {return __get__ (this, function (self, scene) {
 		self.scenes [scene.py_name] = scene;
 		if (self.currentScene === null) {
@@ -785,6 +834,8 @@ export var Game =  __class__ ('Game', [object], {
 		window.addEventListener ('touchstart', self.handle_mousedown, false);
 		window.addEventListener ('touchend', self.handle_mouseup, false);
 		window.addEventListener ('touchmove', self.handle_mousemove, false);
+		window.addEventListener ('gamepadconnected', self._add_gamepad, false);
+		window.addEventListener ('gamepaddisconnected', self._remove_gamepad, false);
 	});},
 	get __game_loop () {return __get__ (this, function (self) {
 		var ctx = self.__get_context ();
@@ -793,6 +844,7 @@ export var Game =  __class__ ('Game', [object], {
 		self.py_update (delta_time);
 		self.draw (ctx);
 		self._prev_time = self.get_time ();
+		self.handle_gamepad ();
 	});}
 });
 
