@@ -1,7 +1,7 @@
 # COMPILE_FLAGS=-b -m -n
 COMPILE_FLAGS=-b
 PYTHON_HOME=/usr/local
-DEPLOY_DIR=${HOME}/Sites/bedlam
+DEPLOY_DIR=${HOME}/Sites/snake
 
 build:     build/snake.js
 
@@ -23,9 +23,10 @@ deploy: build LICENSE
 	cp -r assets $(DEPLOY_DIR)
 	cp *.html $(DEPLOY_DIR)
 	cp *.png $(DEPLOY_DIR)
-	cp *.json $(DEPLOY_DIR)
 	cp style.css $(DEPLOY_DIR)
 	cp LICENSE $(DEPLOY_DIR)
+	cp sw.js $(DEPLOY_DIR)
+	cp site.webmanifest $(DEPLOY_DIR)
 
 zip: build
 	cp snake.html index.html
