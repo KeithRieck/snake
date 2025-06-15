@@ -1,61 +1,69 @@
-const cacheName = "cache_snake"; // Change value to force update
+const CACHE_NAME = "cache_snake"; // Change value to force update
 
-self.addEventListener("install", event => {
-	// Kick out the old service worker
-	self.skipWaiting();
+const URLS_TO_CACHE = [
+    "/",
+    "snake.html",
+    "icon_128x128.png",
+    "icon_192x192.png",
+    "icon_512x512.png",
+    "LICENSE",
+    "site.webmanifest",
+    "snake_apple-touch-icon.png",
+    "style.css",
+    "assets/snake_add_apple.wav",
+    "assets/snake_collision.mp3",
+    "assets/snake_eat_apple.wav",
+    "build/bedlam.js",
+    "build/bedlam.py",
+    "build/bedlam.map",
+    "build/snake.js",
+    "build/snake.py",
+    "build/snake.map",
+    "build/org.transcrypt.__runtime__.js",
+    "build/org.transcrypt.__runtime__.py",
+    "build/org.transcrypt.__runtime__.map",
+    "build/snake.project"
+];
 
-	event.waitUntil(
-		caches.open(cacheName).then(cache => {
-			return cache.addAll([
-				"/",
-                "favicon.ico",
-                "icon-128x128.png",
-				"icon-192x192.png",
-				"icon-512x512.png",
-                "LICENSE",
-                "site.webmanifest",
-				"snake_apple-touch-icon.png",
-				"style.css",
-				"build/bedlam.js",
-                "build/org.transcrypt.__runtime__.js",
-				"build/snake.js",
-				"build/snake.project",
-                "assets/snake_add_apple.wav",
-                "assets/snake_collision.mp3",
-                "assets/snake_eat_apple.wav"
-			]);
-		})
-	);
-});
+// Install event: Cache assets
+self.addEventListener('install', event => {
+    event.waitUntil(
+      caches.open(CACHE_NAME)
+        .then(cache => {
+          console.log('Opened cache');
+          return cache.addAll(URLS_TO_CACHE);
+        })
+    );
+  });
 
-self.addEventListener("activate", event => {
-	// Delete any non-current cache
-	event.waitUntil(
-		caches.keys().then(keys => {
-			Promise.all(
-				keys.map(key => {
-					if (![cacheName].includes(key)) {
-						return caches.delete(key);
-					}
-				})
-			)
-		})
-	);
-});
-
-// Offline-first, cache-first strategy
-// Kick off two asynchronous requests, one to the cache and one to the network
-// If there's a cached version available, use it, but fetch an update for next time.
-// Gets data on screen as quickly as possible, then updates once the network has returned the latest data.
-self.addEventListener("fetch", event => {
-	event.respondWith(
-		caches.open(cacheName).then(cache => {
-			return cache.match(event.request).then(response => {
-				return response || fetch(event.request).then(networkResponse => {
-					cache.put(event.request, networkResponse.clone());
-					return networkResponse;
-				});
-			})
-		})
-	);
-});
+// Fetch event: Serve from cache or network
+self.addEventListener('fetch', event => {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          // Cache hit - return response
+          if (response) {
+            return response;
+          }
+          // Not in cache - fetch from network
+          return fetch(event.request);
+        }
+      )
+    );
+  });
+  
+  // Activate event: Clean up old caches
+  self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME];
+    event.waitUntil(
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheWhitelist.indexOf(cacheName) === -1) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+    );
+  });

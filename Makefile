@@ -1,5 +1,5 @@
-# COMPILE_FLAGS=-b -m -n
-COMPILE_FLAGS=-b
+COMPILE_FLAGS=-b -m -n
+# COMPILE_FLAGS=-b
 PYTHON_HOME=/usr/local
 DEPLOY_DIR=${HOME}/Sites/snake
 
@@ -19,14 +19,15 @@ clean:
 deploy: build LICENSE
 	mkdir -p $(DEPLOY_DIR)
 	cp -rf __target__/ build/
-	cp -r build $(DEPLOY_DIR)
 	cp -r assets $(DEPLOY_DIR)
+	cp -r build $(DEPLOY_DIR)
 	cp *.html $(DEPLOY_DIR)
 	cp *.png $(DEPLOY_DIR)
-	cp style.css $(DEPLOY_DIR)
+	cp favicon.ico $(DEPLOY_DIR)
 	cp LICENSE $(DEPLOY_DIR)
-	cp sw.js $(DEPLOY_DIR)
 	cp site.webmanifest $(DEPLOY_DIR)
+	cp style.css $(DEPLOY_DIR)
+	cp sw.js $(DEPLOY_DIR)
 
 zip: build
 	cp snake.html index.html
