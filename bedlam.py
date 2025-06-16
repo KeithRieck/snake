@@ -510,6 +510,9 @@ class Scene(GameObject):
         if isinstance(b, (int, float)):
             return b == 1
         return b.pressed or b.touched or b.value > 0
+    
+    def get_axis_value(self, gp, i) -> float:
+        return gp.axes[i]
 
     def append(self, gameobject):
         self.children.append(gameobject)
