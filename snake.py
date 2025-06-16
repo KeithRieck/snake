@@ -327,13 +327,13 @@ class SnakeScene(Scene):
     
     def handle_gamepad(self, gp):
         Scene.handle_gamepad(self, gp)
-        if self.is_button_pressed(gp, 14) or self.is_button_pressed(gp, 2):
+        if self.is_button_pressed(gp, 14) or self.is_button_pressed(gp, 2) or self.get_axis_value(gp, 0) < -0.5:
             self._set_direction(LEFT)
-        elif self.is_button_pressed(gp, 15) or self.is_button_pressed(gp, 3):
+        elif self.is_button_pressed(gp, 15) or self.is_button_pressed(gp, 3) or self.get_axis_value(gp, 0) > 0.5:
             self._set_direction(RIGHT)
-        elif self.is_button_pressed(gp, 12) or self.is_button_pressed(gp, 0):
+        elif self.is_button_pressed(gp, 12) or self.is_button_pressed(gp, 0) or self.get_axis_value(gp, 1) < -0.5:
             self._set_direction(UP)
-        elif self.is_button_pressed(gp, 13) or self.is_button_pressed(gp, 1):
+        elif self.is_button_pressed(gp, 13) or self.is_button_pressed(gp, 1) or self.get_axis_value(gp, 1) > 0.5:
             self._set_direction(DOWN)
 
     def collision(self):
